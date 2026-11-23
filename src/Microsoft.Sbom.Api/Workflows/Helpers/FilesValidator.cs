@@ -29,7 +29,7 @@ public class FilesValidator
     private readonly ILogger log;
     private readonly FileHasher fileHasher;
     private readonly ManifestFolderFilterer fileFilterer;
-    private readonly ConcurrentSha256HashValidator hashValidator;
+    private readonly ConcurrentHashValidator hashValidator;
     private readonly EnumeratorChannel enumeratorChannel;
     private readonly SbomFileToFileInfoConverter fileConverter;
     private readonly FileHashesDictionary fileHashesDictionary;
@@ -41,7 +41,7 @@ public class FilesValidator
         ILogger log,
         FileHasher fileHasher,
         ManifestFolderFilterer fileFilterer,
-        ConcurrentSha256HashValidator hashValidator,
+        ConcurrentHashValidator hashValidator,
         EnumeratorChannel enumeratorChannel,
         SbomFileToFileInfoConverter fileConverter,
         FileHashesDictionary fileHashesDictionary,

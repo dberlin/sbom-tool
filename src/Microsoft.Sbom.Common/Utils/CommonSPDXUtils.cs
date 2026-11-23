@@ -55,7 +55,9 @@ public static class CommonSPDXUtils
     /// </summary>
     public static string GenerateSpdxFileId(string fileName, string sha1Value)
     {
-        var spdxFileId = $"{Constants.SPDXRefFile}-{fileName}-{sha1Value}";
+        // Include the original path identity before sanitizing: GMT+0 and GMT-0 may
+        // contain identical bytes but must remain distinct SPDX file elements.
+        var spdxFileId = $"{Constants.SPDXRefFile}-{fileName}-{GetStringHash(fileName)}-{sha1Value}";
         return SpdxIdAllowedCharsRegex.Replace(spdxFileId, "-");
     }
 
@@ -79,8 +81,6 @@ public static class CommonSPDXUtils
     /// </summary>
     private static string GetStringHash(string str)
     {
-        var hash = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(str));
-        var spdxId = BitConverter.ToString(hash).Replace("-", string.Empty);
-        return spdxId;
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(str)));
     }
 }

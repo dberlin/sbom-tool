@@ -32,6 +32,9 @@
     <ItemGroup>
         <!-- Pinned assemblies for transitive dependencies -->
         <PackageReference Include="System.Net.Http" />                     <!-- Used by ComponentDetection -->
+        <PackageReference Include="NuGet.Packaging" />
+        <PackageReference Include="NuGet.Protocol" />
+        <PackageReference Include="System.Security.Cryptography.Pkcs" />
     </ItemGroup>
 
     <ItemGroup>

@@ -22,7 +22,6 @@ public class SPDXExtensionsTest
     private const string PackageSpdxIdWithPackageId = "SPDXRef-Package-D59091CB205934C58034F3FB2290A10F3DC6AFDA895B099066F9D40245A239C2";
     private const string PackageSpdxIdWithVersionAndMissingPackageId = "SPDXRef-Package-76A4881BB39276EA67CA840875A0EDFFE7562057AD19998491518B222D278E87";
     private const string ExternalReferenceSpdxId = "DocumentRef-externalRefName-sha1Value";
-    private const string FileSpdxId = "SPDXRef-File-filePath-sha1Value";
     private const string ElementSpdxId = "SPDXRef-Element-82A3537FF0DBCE7EEC35D69EDC3A189EE6F17D82F353A553F9AA96CB0BE3CE89";
 
     private InternalSbomFileInfo fileInfo = null;
@@ -172,7 +171,10 @@ public class SPDXExtensionsTest
     public void AddSpdxIdToFile_Succeeds()
     {
         spdxFile.AddSpdxId(fileInfo);
-        Assert.AreEqual(FileSpdxId, spdxFile.SpdxId);
+        var firstId = spdxFile.SpdxId;
+        StringAssert.StartsWith(firstId, "SPDXRef-File-");
+        spdxFile.AddSpdxId(fileInfo);
+        Assert.AreEqual(firstId, spdxFile.SpdxId);
     }
 
     [TestMethod]

@@ -118,7 +118,70 @@ By default, users commonly log telemetry to the console output. In order to log 
 ./sbom-tool-win-x64.exe generate -b c:\outputDrop -bc c:\Users\test\TestProject -pn TestProject -pv 1.0.0 -ps MyCompany -nsb http://mycompany.com -t c:\telemetry
 ```
 
+### Native source project declarations (local extension)
+
+This local build supplements Component Detection with an independent, read-only
+native project scanner before normal SBOM serialization. It reads CMake
+`project(... VERSION ...)`, `rocm_setup_version(VERSION ...)`, explicit current
+`PROJECT_VERSION` assignments, resolved literal `set` variables, exact local
+`include`/`file(READ)` inputs and bounded literal `if(... MATCHES ...)` captures
+or `string(REGEX REPLACE ...)` version transformations.
+Meson `project(..., version: ...)` declarations support complete literal
+expressions, literal variables, or `files('VERSION')`; concatenations and other
+unsupported expressions are not accepted as literal prefixes. The scanner does
+not execute CMake, Meson, Python, or shell code. Unknown conditional writes,
+loop-dependent writes, and called function/macro writes invalidate affected facts;
+proven false branches/while bodies and opaque bracket arguments contribute no
+declarations. Loop iterations are not evaluated. Bare CMake module includes
+require an established literal `CMAKE_MODULE_PATH`; relative `file(READ)` paths
+use the owning project's source directory, not the included file's directory.
+Unresolved versions and conflicting declarations are omitted rather than guessed.
+Conditionally available helper definitions retain every possible body's write
+effects instead of discarding an unrelated, established project declaration.
+Recursive and unresolved dynamic writes invalidate already-recorded version
+metadata as well as ordinary variable facts. Literal output positions for
+standard mutators distinguish unrelated writes from possible version changes.
+A same-variable export preserves metadata only while its version aliases remain
+known and unshadowed; local, parameter, conditional, and recursive shadows do not
+qualify. This remains a bounded declaration analysis, not configuration execution.
+Unquoted expansions before a variable's output position must be established,
+nonempty scalar arguments; otherwise the project is omitted. Double-quoted list
+values retain one argument. Unknown generic export targets are not guessed,
+even if an earlier project version was literal. Unavailable modules cannot
+supply version inputs or scoped export proofs; arbitrary host-module, cache,
+and toolchain runtime behavior is not evaluated.
+Dependency minimums from `find_package` and versions of umbrella source archives
+are not treated as package release versions.
+
+Native package PURLs carry `source_file`, `source_line`, and `version_key`
+declaration qualifiers, plus `source_project` for the owning project file.
+The owner participates in package identity independently of shared version-file
+provenance, so separate projects using one version include remain distinct.
+Native inventory is added once per generation, independently of worker count.
+Packages receive root inventory relationships, not inferred CMake/Meson build
+dependency edges. When readable Git metadata
+provides a real origin URL and revision, `vcs_url` and the download location
+record that repository provenance; repository revisions are never used as
+native release-version fallbacks. These are source-declared package versions,
+not evidence that a corresponding ROCm binary was built or installed.
+
+The surrounding Component Detection pipeline can execute tools. In particular,
+PipReport's `pip install --dry-run` can run source-local build hooks. For a
+source-only scan, its documented `PipReportOverrideBehavior=SourceCodeScan`
+environment setting avoids Pip execution but does not resolve Python dependency
+graphs. Enforce read-only source mounts and put caches, temporary files, and
+any approved build/evaluation copies outside source repositories. No single
+detector option is a general filesystem write sandbox.
+
+This local build also hashes the original filename into generated SPDX file IDs
+before character sanitization. Distinct paths such as `GMT+0` and `GMT-0` remain
+distinct even when their contents and sanitized paths are identical.
+
 ## Validating an SBOM
+
+This local build validates the explicitly selected `-Ha` algorithm, including
+SHA1 and SHA256 in multi-checksum manifests regardless of checksum order.
+A missing selected checksum is a validation failure, not a null-value match.
 
 With a SBOM file in hand, use the tool to validate the output file with either command depending on the SPDX version:
 

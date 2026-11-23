@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Sbom.Api.Manifest.Configuration;
 using Microsoft.Sbom.Api.Metadata;
@@ -163,14 +165,7 @@ public class GeneratorTests
         };
 
         var generatorResult = generator.GenerateJsonDocument(fileInfo);
-        var generatedJsonString = generatorResult.Document.RootElement.GetRawText();
-        generatedJsonString = NormalizeString(generatedJsonString);
-
-        var expectedJsonContentAsString = SbomFileJsonStrings.FileWithNoDeclaredLicense;
-        expectedJsonContentAsString = NormalizeString(expectedJsonContentAsString);
-
-        Assert.IsFalse(generatedJsonString.Contains("null"));
-        Assert.AreEqual(expectedJsonContentAsString, generatedJsonString);
+        AssertFileSemantics(generatorResult.Document.RootElement, "./sample/path", declaredLicense: null);
     }
 
     [TestMethod]
@@ -186,14 +181,27 @@ public class GeneratorTests
         };
 
         var generatorResult = generator.GenerateJsonDocument(fileInfo);
-        var generatedJsonString = generatorResult.Document.RootElement.GetRawText();
-        generatedJsonString = NormalizeString(generatedJsonString);
+        AssertFileSemantics(generatorResult.Document.RootElement, "./sample/path", "sampleLicense2");
+    }
 
-        var expectedJsonContentAsString = SbomFileJsonStrings.FileWithLicensesAndHashes;
-        expectedJsonContentAsString = NormalizeString(expectedJsonContentAsString);
-
-        Assert.IsFalse(generatedJsonString.Contains("null"));
-        Assert.AreEqual(expectedJsonContentAsString, generatedJsonString);
+    [TestMethod]
+    public void GenerateJsonDocument_DistinctOriginalPathsWithIdenticalContents_PreservesResolvableFileIdentities()
+    {
+        var ids = new HashSet<string>();
+        foreach (var path in new[] { "./zoneinfo/GMT+0", "./zoneinfo/GMT-0" })
+        {
+            var fileInfo = new InternalSbomFileInfo
+            {
+                Checksum = GetSampleChecksums(),
+                FileCopyrightText = "sampleCopyright",
+                LicenseConcluded = "sampleLicense1",
+                LicenseInfoInFiles = new List<string> { "sampleLicense2" },
+                Path = path,
+            };
+            var result = generator.GenerateJsonDocument(fileInfo);
+            AssertFileSemantics(result.Document.RootElement, path, "sampleLicense2");
+            Assert.IsTrue(ids.Add(result.ResultMetadata.EntityId));
+        }
     }
 
     [TestMethod]
@@ -384,6 +392,42 @@ public class GeneratorTests
             ChecksumValue = "DIFFsha256Value"
           },
         };
+    }
+
+    private static void AssertFileSemantics(JsonElement document, string path, string declaredLicense)
+    {
+        var elements = document.EnumerateArray().ToArray();
+        var byId = elements.ToDictionary(element => element.GetProperty("spdxId").GetString());
+        Assert.AreEqual(elements.Length, byId.Count);
+        Assert.IsTrue(byId.Keys.All(id => Regex.IsMatch(id, "^SPDXRef-[A-Za-z0-9.-]+$")));
+
+        var file = elements.Single(element => element.GetProperty("type").GetString() == "software_File");
+        var fileId = file.GetProperty("spdxId").GetString();
+        Assert.AreEqual(path, file.GetProperty("name").GetString());
+        Assert.AreEqual("sampleCopyright", file.GetProperty("software_copyrightText").GetString());
+        Assert.AreEqual("_:creationinfo", file.GetProperty("creationInfo").GetString());
+
+        var hashes = file.GetProperty("verifiedUsing").EnumerateArray().ToArray();
+        Assert.AreEqual(2, hashes.Length);
+        CollectionAssert.AreEquivalent(new[] { "sha1", "sha256" }, hashes.Select(hash => hash.GetProperty("algorithm").GetString()).ToArray());
+        Assert.AreEqual("sha1value", hashes.Single(hash => hash.GetProperty("algorithm").GetString() == "sha1").GetProperty("hashValue").GetString());
+        Assert.AreEqual("sha256value", hashes.Single(hash => hash.GetProperty("algorithm").GetString() == "sha256").GetProperty("hashValue").GetString());
+        Assert.IsTrue(hashes.All(hash => hash.GetProperty("type").GetString() == "PackageVerificationCode"));
+
+        var relationships = elements.Where(element => element.GetProperty("type").GetString() == "Relationship").ToArray();
+        Assert.AreEqual(2, relationships.Length);
+        CollectionAssert.AreEquivalent(new[] { "HAS_CONCLUDED_LICENSE", "HAS_DECLARED_LICENSE" }, relationships.Select(relationship => relationship.GetProperty("relationshipType").GetString()).ToArray());
+        foreach (var relationship in relationships)
+        {
+            Assert.AreEqual(fileId, relationship.GetProperty("from").GetString());
+            var targets = relationship.GetProperty("to").EnumerateArray().ToArray();
+            Assert.AreEqual(1, targets.Length);
+            Assert.IsTrue(byId.TryGetValue(targets[0].GetString(), out var license));
+            var concluded = relationship.GetProperty("relationshipType").GetString() == "HAS_CONCLUDED_LICENSE";
+            var expectedName = concluded ? "sampleLicense1" : declaredLicense ?? "NOASSERTION";
+            Assert.AreEqual(expectedName, license.GetProperty("name").GetString());
+            Assert.AreEqual(expectedName == "NOASSERTION" ? "Element" : "AnyLicenseInfo", license.GetProperty("type").GetString());
+        }
     }
 
     private IInternalMetadataProvider CreateInternalMetadataProvider()

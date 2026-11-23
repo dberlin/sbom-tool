@@ -8,6 +8,8 @@ using Microsoft.Sbom.Api.Utils;
 using Microsoft.Sbom.Common.Config;
 using Microsoft.Sbom.Common.Config.Attributes;
 using PowerArgs;
+using Serilog;
+using Serilog.Extensions.Logging;
 using IConfiguration = Microsoft.Sbom.Common.Config.IConfiguration;
 
 namespace Microsoft.Sbom.Api.Config.Extensions;
@@ -50,8 +52,11 @@ public static class ConfigurationExtensions
     }
 
     // Map the validated InputConfiguration to a Configuration, which will persist the mapping statically and globally
-    public static Configuration ToConfiguration(this InputConfiguration inputConfig) =>
-        new MapperConfiguration(cfg => cfg.CreateMap<InputConfiguration, Configuration>())
+    public static Configuration ToConfiguration(this InputConfiguration inputConfig)
+    {
+        using var loggerFactory = new SerilogLoggerFactory(new LoggerConfiguration().WriteTo.Console().CreateLogger(), dispose: true);
+        return new MapperConfiguration(cfg => cfg.CreateMap<InputConfiguration, Configuration>(), loggerFactory)
             .CreateMapper()
             .Map<Configuration>(inputConfig);
+    }
 }

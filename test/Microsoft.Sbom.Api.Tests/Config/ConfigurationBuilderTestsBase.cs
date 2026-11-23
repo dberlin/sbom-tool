@@ -12,7 +12,10 @@ using Microsoft.Sbom.Common.Config.Validators;
 using Microsoft.Sbom.Contracts.Entities;
 using Microsoft.Sbom.Contracts.Interfaces;
 using Microsoft.Sbom.Extensions.Entities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Serilog;
+using Serilog.Extensions.Logging;
 using Constants = Microsoft.Sbom.Api.Utils.Constants;
 
 namespace Microsoft.Sbom.Api.Config.Tests;
@@ -23,6 +26,7 @@ public class ConfigurationBuilderTestsBase
     private protected IMapper mapper;
     protected ConfigValidator[] configValidators;
     protected Mock<IAssemblyConfig> mockAssemblyConfig;
+    private SerilogLoggerFactory loggerFactory;
 
     protected void Init()
     {
@@ -57,14 +61,20 @@ public class ConfigurationBuilderTestsBase
             return Activator.CreateInstance(type);
         }
 
-        var mapperConfiguration = new MapperConfiguration(cfg =>
-        {
-            cfg.ConstructServicesUsing(Ctor);
-            cfg.AddProfile<ConfigurationProfile>();
-        });
+        loggerFactory = new SerilogLoggerFactory(new LoggerConfiguration().WriteTo.Console().CreateLogger(), dispose: true);
+        var mapperConfiguration = new MapperConfiguration(
+            cfg =>
+            {
+                cfg.ConstructServicesUsing(Ctor);
+                cfg.AddProfile<ConfigurationProfile>();
+            },
+            loggerFactory);
 
         mapper = mapperConfiguration.CreateMapper();
     }
+
+    [TestCleanup]
+    public void DisposeMapperLoggerFactory() => loggerFactory?.Dispose();
 
     protected const string JSONConfigWithManifestPath = "{ \"ManifestDirPath\": \"manifestDirPath\"}";
     protected const string JSONConfigGoodWithManifestInfo = "{ \"ManifestInfo\": [{ \"Name\":\"SPDX\", \"Version\":\"2.2\"}]}";

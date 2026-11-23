@@ -10,8 +10,7 @@
     <ComponentDetectionPackageVersion>6.2.1</ComponentDetectionPackageVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="AutoMapper" Version="10.1.1" />
-    <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
+    <PackageVersion Include="AutoMapper" Version="15.1.1" />
     <PackageVersion Include="Microsoft.Build" Version="17.11.48" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="17.11.48" />
     <PackageVersion Include="Microsoft.Build.Locator" Version="1.9.1" />
@@ -23,17 +22,19 @@
     <PackageVersion Include="Microsoft.ComponentDetection.Detectors" Version="$(ComponentDetectionPackageVersion)" />
     <PackageVersion Include="Microsoft.ComponentDetection.Orchestrator" Version="$(ComponentDetectionPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
     <PackageVersion Include="Microsoft.IO.Redist" Version="6.1.0" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15" />
     <PackageVersion Include="MinVer" Version="6.0.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageVersion Include="NuGet.Configuration" Version="7.0.1" />
-    <PackageVersion Include="NuGet.Frameworks" Version="7.0.1" />
-    <PackageVersion Include="NuGet.ProjectModel" Version="7.0.1" />
+    <PackageVersion Include="NuGet.Configuration" Version="7.0.3" />
+    <PackageVersion Include="NuGet.Frameworks" Version="7.0.3" />
+    <PackageVersion Include="NuGet.Packaging" Version="7.0.3" />
+    <PackageVersion Include="NuGet.ProjectModel" Version="7.0.3" />
+    <PackageVersion Include="NuGet.Protocol" Version="7.0.3" />
     <PackageVersion Include="packageurl-dotnet" Version="1.1.0" />
     <PackageVersion Include="PowerArgs" Version="3.6.0" />
     <PackageVersion Include="Scrutor" Version="6.1.0" />
@@ -53,6 +54,7 @@
     <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
     <PackageVersion Include="System.Runtime.Loader" Version="4.3.0" />
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="9.0.21" />
     <PackageVersion Include="System.Text.Json" Version="9.0.10" />
     <PackageVersion Include="System.Threading.Channels" Version="9.0.10" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="8.0.1" />

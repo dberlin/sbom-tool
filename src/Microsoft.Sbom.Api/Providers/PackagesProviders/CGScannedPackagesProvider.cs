@@ -24,6 +24,8 @@ public class CGScannedPackagesProvider : CommonPackagesProvider<ScannedComponent
 
     private readonly PackagesWalker packagesWalker;
 
+    private readonly INativeBuildPackageDetector nativeDetector;
+
     public CGScannedPackagesProvider(
         IConfiguration configuration,
         ChannelUtils channelUtils,
@@ -33,11 +35,13 @@ public class CGScannedPackagesProvider : CommonPackagesProvider<ScannedComponent
         ComponentToPackageInfoConverter packageInfoConverter,
         PackagesWalker packagesWalker,
         IPackageDetailsFactory packageDetailsFactory,
-        ILicenseInformationFetcher licenseInformationFetcher)
+        ILicenseInformationFetcher licenseInformationFetcher,
+        INativeBuildPackageDetector nativeDetector)
         : base(configuration, channelUtils, logger, sbomConfigs, packageInfoJsonWriter, packageDetailsFactory, licenseInformationFetcher)
     {
         this.packageInfoConverter = packageInfoConverter ?? throw new ArgumentNullException(nameof(packageInfoConverter));
         this.packagesWalker = packagesWalker ?? throw new ArgumentNullException(nameof(packagesWalker));
+        this.nativeDetector = nativeDetector ?? throw new ArgumentNullException(nameof(nativeDetector));
     }
 
     public override bool IsSupported(ProviderType providerType)
@@ -69,6 +73,19 @@ public class CGScannedPackagesProvider : CommonPackagesProvider<ScannedComponent
         errors.Add(jsonErrors);
 
         return (jsonResults, ChannelUtils.Merge(errors.ToArray()));
+    }
+
+    protected override (ChannelReader<JsonDocWithSerializer> results, ChannelReader<FileValidationResult> errors)
+        WriteAdditionalItems(IList<ISbomConfig> requiredConfigs)
+    {
+        // This hook runs once, unlike ConvertToJson which runs once per worker.
+        var (commonResults, commonErrors) = base.WriteAdditionalItems(requiredConfigs);
+        var packages = nativeDetector.Detect(Configuration.BuildComponentPath?.Value);
+        var (nativeInfos, nativeErrors) = new ListWalker<Microsoft.Sbom.Contracts.SbomPackage>().GetComponents(packages);
+        var (nativeResults, serializationErrors) = PackageInfoJsonWriter.Write(nativeInfos, requiredConfigs);
+        return (
+            ChannelUtils.Merge(commonResults, nativeResults),
+            ChannelUtils.Merge(commonErrors, nativeErrors, serializationErrors));
     }
 
     protected override (ChannelReader<ScannedComponent> entities, ChannelReader<FileValidationResult> errors) GetSourceChannel()

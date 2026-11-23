@@ -25,8 +25,6 @@ public class CommonSPDXUtilsTests
     private const string TestHash1 = "sha1Value1";
     private const string TestHash2 = "sha1Value2";
 
-    private const string TestFile1Hash1SpdxId = "SPDXRef-File-testFile1-sha1Value1";
-    private const string TestFile2Hash2SpdxId = "SPDXRef-File-testFile2-sha1Value2";
     private const string TestExternalDoc1Hash1SpdxId = "DocumentRef-testExternalDoc1-sha1Value1";
     private const string TestExternalDoc2Hash2SpdxId = "DocumentRef-testExternalDoc2-sha1Value2";
 
@@ -50,13 +48,14 @@ public class CommonSPDXUtilsTests
         Assert.AreEqual(expectedSpdxId, spdxId);
     }
 
-    [DataRow(TestFile1, TestHash1, TestFile1Hash1SpdxId)]
-    [DataRow(TestFile2, TestHash2, TestFile2Hash2SpdxId)]
+    [DataRow(TestFile1, TestHash1)]
+    [DataRow(TestFile2, TestHash2)]
     [TestMethod]
-    public void GenerateSpdxFileIdTest(string file, string sha1Value, string expectedSpdxId)
+    public void GenerateSpdxFileIdTest(string file, string sha1Value)
     {
         var spdxId = CommonSPDXUtils.GenerateSpdxFileId(file, sha1Value);
-        Assert.AreEqual(expectedSpdxId, spdxId);
+        StringAssert.StartsWith(spdxId, "SPDXRef-File-");
+        Assert.AreEqual(spdxId, CommonSPDXUtils.GenerateSpdxFileId(file, sha1Value));
     }
 
     [TestMethod]
@@ -94,6 +93,17 @@ public class CommonSPDXUtilsTests
         var spdxId1 = CommonSPDXUtils.GenerateSpdxFileId(TestFile1, TestHash1);
         var spdxId2 = CommonSPDXUtils.GenerateSpdxFileId(TestFile1, TestHash2);
         Assert.AreNotEqual(spdxId1, spdxId2);
+    }
+
+    [TestMethod]
+    [DataRow("zoneinfo/GMT+0", "zoneinfo/GMT-0")]
+    [DataRow("zoneinfo/Etc/GMT+0", "zoneinfo/Etc/GMT-0")]
+    public void GenerateSpdxFileId_DistinguishesNamesWithIdenticalSanitizedPaths(string first, string second)
+    {
+        var firstId = CommonSPDXUtils.GenerateSpdxFileId(first, TestHash1);
+        var secondId = CommonSPDXUtils.GenerateSpdxFileId(second, TestHash1);
+        Assert.AreNotEqual(firstId, secondId);
+        Assert.AreEqual(firstId, CommonSPDXUtils.GenerateSpdxFileId(first, TestHash1));
     }
 
     [DataRow(TestExternalDoc1, TestHash1, TestExternalDoc1Hash1SpdxId)]

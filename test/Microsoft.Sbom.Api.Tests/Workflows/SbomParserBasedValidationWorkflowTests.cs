@@ -164,7 +164,7 @@ public class SbomParserBasedValidationWorkflowTests : ValidationWorkflowTestsBas
         var osUtilsMock = new Mock<IOSUtils>(MockBehavior.Strict);
 
         var fileHash = BuildFileHash();
-        var hashValidator = new ConcurrentSha256HashValidator(fileHash);
+        var hashValidator = new ConcurrentHashValidator(fileHash, configurationMock.Object);
         var enumeratorChannel = new EnumeratorChannel(mockLogger.Object);
         var fileConverter = new SbomFileToFileInfoConverter(new FileTypeUtils());
         var spdxFileFilterer = new FileFilterer(rootFileFilterMock, mockLogger.Object, configurationMock.Object, fileSystemMock.Object);
@@ -342,7 +342,7 @@ public class SbomParserBasedValidationWorkflowTests : ValidationWorkflowTestsBas
         osUtilsMock.Setup(x => x.IsCaseSensitiveOS()).Returns(false);
 
         var fileHash = BuildFileHash();
-        var hashValidator = new ConcurrentSha256HashValidator(fileHash);
+        var hashValidator = new ConcurrentHashValidator(fileHash, configurationMock.Object);
         var enumeratorChannel = new EnumeratorChannel(mockLogger.Object);
         var fileConverter = new SbomFileToFileInfoConverter(new FileTypeUtils());
         var spdxFileFilterer = new FileFilterer(rootFileFilterMock, mockLogger.Object, configurationMock.Object, fileSystemMock.Object);
@@ -433,6 +433,7 @@ public class SbomParserBasedValidationWorkflowTests : ValidationWorkflowTestsBas
         configurationMock.SetupGet(c => c.BuildDropPath).Returns(new ConfigurationSetting<string> { Value = "/root" });
         configurationMock.SetupGet(c => c.ManifestDirPath).Returns(new ConfigurationSetting<string> { Value = PathUtils.Join("/root", "_manifest") });
         configurationMock.SetupGet(c => c.Parallelism).Returns(new ConfigurationSetting<int> { Value = 3 });
+        configurationMock.SetupGet(c => c.HashAlgorithm).Returns(new ConfigurationSetting<AlgorithmName> { Value = Constants.DefaultHashAlgorithmName });
         configurationMock.SetupGet(c => c.IgnoreMissing).Returns(new ConfigurationSetting<bool> { Value = false });
         configurationMock.SetupGet(c => c.ManifestToolAction).Returns(ManifestToolActions.Validate);
         configurationMock.SetupGet(c => c.ManifestInfo).Returns(new ConfigurationSetting<IList<ManifestInfo>>
@@ -535,7 +536,7 @@ public class SbomParserBasedValidationWorkflowTests : ValidationWorkflowTestsBas
         rootFileFilterMock.Init();
 
         var fileHash = BuildFileHash();
-        var hashValidator = new ConcurrentSha256HashValidator(fileHash);
+        var hashValidator = new ConcurrentHashValidator(fileHash, configurationMock.Object);
         var enumeratorChannel = new EnumeratorChannel(mockLogger.Object);
         var fileConverter = new SbomFileToFileInfoConverter(new FileTypeUtils());
         var spdxFileFilterer = new FileFilterer(rootFileFilterMock, mockLogger.Object, configurationMock.Object, fileSystemMock.Object);

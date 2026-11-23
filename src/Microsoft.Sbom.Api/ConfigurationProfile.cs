@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using AutoMapper;
+using AutoMapper.Internal;
 using Microsoft.Sbom.Api.Config;
 using Microsoft.Sbom.Api.Config.Args;
 using Microsoft.Sbom.Api.Config.ValueConverters;
@@ -146,34 +147,34 @@ public class ConfigurationProfile : Profile
             }));
 
         // Set value converters for each type of object.
-        ForAllPropertyMaps(
+        this.Internal().ForAllPropertyMaps(
             p => p.SourceType == typeof(string),
             (c, memberOptions) => memberOptions.ConvertUsing(new StringConfigurationSettingAddingConverter(GetSettingSourceFor(c.SourceMember.ReflectedType))));
-        ForAllPropertyMaps(
+        this.Internal().ForAllPropertyMaps(
             p => p.SourceType == typeof(bool?),
             (c, memberOptions) => memberOptions.ConvertUsing(new NullableBoolConfigurationSettingAddingConverter(GetSettingSourceFor(c.SourceMember.ReflectedType))));
-        ForAllPropertyMaps(
+        this.Internal().ForAllPropertyMaps(
             p => p.SourceType == typeof(bool),
             (c, memberOptions) => memberOptions.ConvertUsing(new BoolConfigurationSettingAddingConverter(GetSettingSourceFor(c.SourceMember.ReflectedType))));
-        ForAllPropertyMaps(
+        this.Internal().ForAllPropertyMaps(
             p => p.SourceType == typeof(int),
             (c, memberOptions) => memberOptions.ConvertUsing<int>(new IntConfigurationSettingAddingConverter(GetSettingSourceFor(c.SourceMember.ReflectedType))));
-        ForAllPropertyMaps(
+        this.Internal().ForAllPropertyMaps(
             p => p.SourceType == typeof(int?),
             (c, memberOptions) => memberOptions.ConvertUsing<int?>(new IntConfigurationSettingAddingConverter(GetSettingSourceFor(c.SourceMember.ReflectedType))));
-        ForAllPropertyMaps(
+        this.Internal().ForAllPropertyMaps(
             p => p.SourceType == typeof(LogEventLevel?),
             (c, memberOptions) => memberOptions.ConvertUsing(new LogEventLevelConfigurationSettingAddingConverter(GetSettingSourceFor(c.SourceMember.ReflectedType))));
-        ForAllPropertyMaps(
+        this.Internal().ForAllPropertyMaps(
             p => p.SourceType == typeof(IList<ManifestInfo>),
             (c, memberOptions) => memberOptions.ConvertUsing(new ManifestInfoConfigurationSettingAddingConverter(GetSettingSourceFor(c.SourceMember.ReflectedType))));
-        ForAllPropertyMaps(
+        this.Internal().ForAllPropertyMaps(
             p => p.SourceType == typeof(AlgorithmName),
             (c, memberOptions) => memberOptions.ConvertUsing(new HashAlgorithmNameConfigurationSettingAddingConverter(GetSettingSourceFor(c.SourceMember.ReflectedType))));
-        ForAllPropertyMaps(
+        this.Internal().ForAllPropertyMaps(
             p => p.SourceType == typeof(ConformanceType),
             (c, memberOptions) => memberOptions.ConvertUsing(new ConformanceConfigurationSettingAddingConverter(GetSettingSourceFor(c.SourceMember.ReflectedType))));
-        ForAllPropertyMaps(
+        this.Internal().ForAllPropertyMaps(
             p => p.SourceType == typeof(Dictionary<string, ArtifactInfo>),
             (c, memberOptions) => memberOptions.ConvertUsing(new ArtifactInfoMapSettingAddingConverter(GetSettingSourceFor(c.SourceMember.ReflectedType))));
     }

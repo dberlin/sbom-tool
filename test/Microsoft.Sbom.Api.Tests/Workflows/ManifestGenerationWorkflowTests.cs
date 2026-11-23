@@ -69,6 +69,7 @@ public class ManifestGenerationWorkflowTests
     private readonly Mock<IFileSystemUtilsExtension> fileSystemUtilsExtensionMock = new Mock<IFileSystemUtilsExtension>();
     private readonly Mock<ILicenseInformationFetcher> licenseInformationFetcherMock = new Mock<ILicenseInformationFetcher>();
     private readonly Mock<IPackageDetailsFactory> mockPackageDetailsFactory = new Mock<IPackageDetailsFactory>();
+    private readonly Mock<INativeBuildPackageDetector> nativeDetectorMock = new Mock<INativeBuildPackageDetector>();
 
     [TestInitialize]
     public void Setup()
@@ -76,6 +77,7 @@ public class ManifestGenerationWorkflowTests
         fileSystemMock.Setup(f => f.GetRelativePath(It.IsAny<string>(), It.IsAny<string>()))
             .Returns((string r, string p) => PathUtils.GetRelativePath(r, p));
         fileSystemUtilsExtensionMock.Setup(f => f.IsTargetPathInSource(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
+        nativeDetectorMock.Setup(detector => detector.Detect(It.IsAny<string>())).Returns(Array.Empty<SbomPackage>());
     }
 
     [TestMethod]
@@ -319,7 +321,8 @@ public class ManifestGenerationWorkflowTests
             packageInfoConverterMock.Object,
             new PackagesWalker(mockLogger.Object, mockDetector.Object, configurationMock.Object, sbomConfigs, fileSystemMock.Object, mockPackageDetailsFactory.Object, licenseInformationFetcherMock.Object),
             mockPackageDetailsFactory.Object,
-            licenseInformationFetcherMock.Object);
+            licenseInformationFetcherMock.Object,
+            nativeDetectorMock.Object);
 
         var externalDocumentReferenceProvider = new ExternalDocumentReferenceProvider(
             configurationMock.Object,

@@ -8,6 +8,28 @@ The SBOM tool is a cross-platform, C#-based tool compiled using the  Microsoft .
 * Clone this GitHub repo (see steps to clone repo [here](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)).
 * A text editor or integrated development environment (IDE) such as [Visual Studio Code](https://code.visualstudio.com) or [Visual Studio](https://visualstudio.microsoft.com).
 
+### Local dependency security and licensing change
+
+This local build upgrades AutoMapper from 10.1.1 to patched 15.1.1 for
+[GHSA-rvv3-g6hj-g44x](https://github.com/advisories/GHSA-rvv3-g6hj-g44x).
+The obsolete `AutoMapper.Extensions.Microsoft.DependencyInjection` package is
+removed: dependency injection is provided by AutoMapper itself. NuGet audit and
+warnings-as-errors remain enabled. Use the .NET 8 SDK for the upstream net8.0
+build/test configuration; newer SDK analyzer changes can reject existing
+suppression directives even when the code itself is compatible.
+
+AutoMapper 15.1.1 has a licensing change: its
+[exact release license](https://github.com/LuckyPennySoftware/AutoMapper/blob/v15.1.1/LICENSE.md)
+offers RPL 1.5 or a separate commercial agreement. RPL 1.5 distinguishes internal
+research from deployment, and deployment/distribution has additional obligations.
+This local investigation does not establish production, deployment, or
+redistribution licensing eligibility. No commercial agreement or license key is
+configured by this patch. AutoMapper's missing-license warning remains visible;
+the logger factory is real, not a null logger or filtered license category.
+Review [the license](https://opensource.org/license/rpl-1-5/) and
+[the vendor's enforcement documentation](https://docs.automapper.io/en/latest/License-configuration.html)
+before any use outside the authorized local research/test scope.
+
 ## Understanding the source structure
 
 Users can find source files in the following folder locations:

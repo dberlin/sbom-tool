@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.IO;
 using System.Text;
 using Microsoft.ComponentDetection.Contracts.BcdeModels;
 using Microsoft.ComponentDetection.Contracts.TypedComponent;
@@ -33,7 +34,9 @@ public class NugetUtilsTests
             Component = new NuGetComponent("testName", "1.0.0")
         };
 
-        var nuspecPath = $"{NugetPackagesPath}{((NuGetComponent)scannedComponent.Component).Name.ToLower()}/{((NuGetComponent)scannedComponent.Component).Version}/{((NuGetComponent)scannedComponent.Component).Name.ToLower()}.nuspec";
+        var component = (NuGetComponent)scannedComponent.Component;
+        var name = component.Name.ToLowerInvariant();
+        var nuspecPath = Path.Join(NugetPackagesPath, name, component.Version, $"{name}.nuspec");
 
         mockFileSystemUtils.Setup(fs => fs.DirectoryHasReadPermissions(It.IsAny<string>())).Returns(true);
         mockFileSystemUtils.Setup(fs => fs.FileExists(It.IsAny<string>())).Returns(true);
