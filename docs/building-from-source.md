@@ -10,16 +10,18 @@ The SBOM tool is a cross-platform, C#-based tool compiled using the  Microsoft .
 
 ### Local dependency security and licensing change
 
-This local build upgrades AutoMapper from 10.1.1 to patched 15.1.1 for
-[GHSA-rvv3-g6hj-g44x](https://github.com/advisories/GHSA-rvv3-g6hj-g44x).
+This local build uses AutoMapper 15.1.4, which addresses
+[GHSA-rvv3-g6hj-g44x](https://github.com/advisories/GHSA-rvv3-g6hj-g44x),
+[GHSA-6vhm-j9h7-f9gh](https://github.com/advisories/GHSA-6vhm-j9h7-f9gh), and
+[GHSA-gpwp-5797-mjff](https://github.com/advisories/GHSA-gpwp-5797-mjff).
 The obsolete `AutoMapper.Extensions.Microsoft.DependencyInjection` package is
 removed: dependency injection is provided by AutoMapper itself. NuGet audit and
 warnings-as-errors remain enabled. Use the .NET 8 SDK for the upstream net8.0
 build/test configuration; newer SDK analyzer changes can reject existing
 suppression directives even when the code itself is compatible.
 
-AutoMapper 15.1.1 has a licensing change: its
-[exact release license](https://github.com/LuckyPennySoftware/AutoMapper/blob/v15.1.1/LICENSE.md)
+AutoMapper 15.x changed its licensing: the
+[15.1.4 license](https://github.com/LuckyPennySoftware/AutoMapper/blob/v15.1.4/LICENSE.md)
 offers RPL 1.5 or a separate commercial agreement. RPL 1.5 distinguishes internal
 research from deployment, and deployment/distribution has additional obligations.
 This local investigation does not establish production, deployment, or
