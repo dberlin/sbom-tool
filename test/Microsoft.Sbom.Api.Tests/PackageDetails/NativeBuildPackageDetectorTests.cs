@@ -389,6 +389,31 @@ public class NativeBuildPackageDetectorTests
         });
     }
 
+    [TestMethod]
+    [DataRow("list(TRANSFORM GPU_TARGETS REPLACE \":[^;]+\" \"\")", true)]
+    [DataRow("list(TRANSFORM GPU_TARGETS PREPEND \"--     \")", true)]
+    [DataRow("list(TRANSFORM PROJECT_VERSION TOUPPER OUTPUT_VARIABLE OTHER_VERSION)", true)]
+    [DataRow("list(TRANSFORM PROJECT_VERSION REPLACE \"^1\" \"9\")", false)]
+    [DataRow("list(TRANSFORM GPU_TARGETS PREPEND \"--     \" OUTPUT_VARIABLE PROJECT_VERSION)", false)]
+    [DataRow("set(args \"x;OUTPUT_VARIABLE;PROJECT_VERSION\")\nlist(TRANSFORM GPU_TARGETS APPEND ${args})", false)]
+    [DataRow("list(TRANSFORM GPU_TARGETS APPLY callback)", false)]
+    [DataRow("list(TRANSFORM GPU_TARGETS STRIP PREDICATE callback)", false)]
+    public void CmakeListTransformPreservesVersionOnlyWithProvenUnrelatedOutput(string transform, bool preserved)
+    {
+        WithSource(root =>
+        {
+            File.WriteAllText(Path.Join(root, "CMakeLists.txt"), "project(Example LANGUAGES NONE)\nset(VERSION_STRING \"1.2.3\")\nrocm_setup_version(VERSION ${VERSION_STRING})\nset(GPU_TARGETS \"gfx90a:xnack+\")\n" + transform + "\n");
+            var packages = Detector.Detect(root);
+            Assert.AreEqual(preserved ? 1 : 0, packages.Count);
+            if (preserved)
+            {
+                var package = packages.Single();
+                Assert.AreEqual("1.2.3", package.PackageVersion);
+                StringAssert.Contains(package.PackageUrl, "source_line=3");
+            }
+        });
+    }
+
     private static void WithSource(Action<string> action)
     {
         var root = Path.Join(Path.GetTempPath(), $"sbom-native-{Guid.NewGuid():N}");

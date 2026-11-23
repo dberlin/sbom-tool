@@ -83,7 +83,36 @@ internal static class NativeCmakeWriteEffects
         }
         else if (command == "list")
         {
-            if (!ListOutputs.TryGetValue(tokens[0], out index))
+            if (tokens[0] == "TRANSFORM")
+            {
+                // Built-in actions have fixed arity. Leave selectors and
+                // callbacks unsupported rather than inferring their effects.
+                var optionIndex = tokens.Count < 3 ? -1 : tokens[2] switch
+                {
+                    "TOLOWER" or "TOUPPER" or "STRIP" or "GENEX_STRIP" => 3,
+                    "APPEND" or "PREPEND" => 4,
+                    "REPLACE" => 5,
+                    _ => -1,
+                };
+                if (optionIndex < 0)
+                {
+                    return false;
+                }
+
+                if (tokens.Count == optionIndex)
+                {
+                    index = 1;
+                }
+                else if (tokens.Count == optionIndex + 2 && tokens[optionIndex] == "OUTPUT_VARIABLE")
+                {
+                    index = optionIndex + 1;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else if (!ListOutputs.TryGetValue(tokens[0], out index))
             {
                 return false;
             }

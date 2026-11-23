@@ -648,7 +648,7 @@ internal sealed class NativeCmakeProjectReader
         var known = NativeCmakeWriteEffects.TryTarget(command, tokens, out var target, out var position);
         var prefixIndex = command == "cmake_parse_arguments" && tokens[0].Equals("PARSE_ARGV", StringComparison.OrdinalIgnoreCase) ? 2 : 0;
         var prefixWrite = command is "cmake_parse_arguments" or "find_package";
-        var hasOptions = command == "execute_process" || command == "file";
+        var hasOptions = command is "execute_process" or "file" || (command == "list" && tokens[0] == "TRANSFORM");
         var proofThrough = prefixWrite ? prefixIndex : hasOptions ? int.MaxValue : position;
         if (!StableArity(tokens, listExpansions, bindings, proofThrough))
         {

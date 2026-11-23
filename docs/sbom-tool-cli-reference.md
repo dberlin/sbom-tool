@@ -141,6 +141,10 @@ effects instead of discarding an unrelated, established project declaration.
 Recursive and unresolved dynamic writes invalidate already-recorded version
 metadata as well as ordinary variable facts. Literal output positions for
 standard mutators distinguish unrelated writes from possible version changes.
+Selector-free built-in `list(TRANSFORM)` forms invalidate only the identified
+output (or input when modified in place); the scanner does not compute the
+transformed contents. Unsupported selectors or ambiguous output positions
+remain conservative.
 A same-variable export preserves metadata only while its version aliases remain
 known and unshadowed; local, parameter, conditional, and recursive shadows do not
 qualify. This remains a bounded declaration analysis, not configuration execution.
